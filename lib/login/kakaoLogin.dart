@@ -13,10 +13,18 @@ class KakaoAuthService {
   /// 🔹 카카오 로그인 및 사용자 정보 조회
   Future<String?> loginWithKakao() async {
     try {
-      // 1. 카카오 로그인 시도
+      // 1. 카카오 로그인 시도 (더 안전한 방식)
       if (await isKakaoTalkInstalled()) {
-        await UserApi.instance.loginWithKakaoTalk();
+        try {
+          // 카카오톡으로 로그인 시도
+          await UserApi.instance.loginWithKakaoTalk();
+        } catch (e) {
+          print("⚠️ 카카오톡 로그인 실패, 웹 로그인으로 전환: $e");
+          // 카카오톡 로그인 실패 시 웹 로그인으로 fallback
+          await UserApi.instance.loginWithKakaoAccount();
+        }
       } else {
+        // 카카오톡이 설치되지 않은 경우 웹 로그인
         await UserApi.instance.loginWithKakaoAccount();
       }
 
@@ -76,6 +84,12 @@ class KakaoAuthService {
       return null;
     } catch (error) {
       print("❌ 카카오 로그인 실패: $error");
+
+      // 특정 오류 메시지 처리
+      if (error.toString().contains('NotSupportError')) {
+        print("💡 해결 방법: 카카오톡 앱에서 카카오 계정에 로그인하거나, 웹 브라우저에서 로그인해주세요.");
+      }
+
       return null;
     }
   }

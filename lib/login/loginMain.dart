@@ -39,8 +39,18 @@ class _LoginMainScreenState extends State<LoginMainScreen> {
     } catch (error) {
       print("❌ 로그인 중 오류 발생: $error");
       if (mounted) {
+        String errorMessage = "카카오 로그인 중 오류가 발생했습니다.";
+
+        // 특정 오류에 대한 친화적인 메시지
+        if (error.toString().contains('NotSupportError')) {
+          errorMessage = "카카오톡에서 카카오 계정에 로그인해주세요.\n또는 웹 브라우저에서 로그인해주세요.";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("카카오 로그인 중 오류가 발생했습니다.")),
+          SnackBar(
+            content: Text(errorMessage),
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     }
@@ -98,14 +108,6 @@ class _LoginMainScreenState extends State<LoginMainScreen> {
         );
       }
     }
-  }
-
-  /// 🔹 로그아웃 처리
-  Future<void> _handleLogout() async {
-    await _kakaoAuthService.logout();
-    setState(() {
-      userNickname = null;
-    });
   }
 
   @override
